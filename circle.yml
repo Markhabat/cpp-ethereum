@@ -87,9 +87,40 @@ jobs:
     working_directory: ~/cpp-ethereum
     steps: *default-steps
 
+  mac:
+    macos:
+      xcode: "9.0"
+    steps:
+      - checkout
+      - run:
+          command: |
+            echo $PATH
+            echo $HOMEBREW_PREFIX
+            make --version
+            python --version
+            pip install requests
+            brew install cmake ninja leveldb libmicrohttpd
+      - run:
+          command: |
+            echo $PATH
+            git submodule update --init --depth 50
+            pwd
+            ls -l
+            mkdir -p build && cd build
+            clang --version
+            cmake --version
+            make --version
+            ninja --version
+            cmake .. -G Ninja
+            cmake --build . --target hunter_upload_cache
+            ninja -j8
+            ETHEREUM_TEST_PATH=~/project/test/jsontests test/testeth
+
+
 workflows:
   version: 2
   cpp-ethereum:
     jobs:
-      - default-clang5-ninja
-      - debug-gcc6-ninja
+      - mac
+#      - default-clang5-ninja
+#      - debug-gcc6-ninja
